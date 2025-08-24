@@ -1,7 +1,15 @@
+// use edi_parser::{
+//     parsers::x12::X12Parser,
+//     models::{InterchangeControl, Segment, Transaction},
+//     error::EdiError,
+// };
 use edi_parser::{
-    parsers::x12::X12Parser,
-    models::{InterchangeControl, Segment, Transaction},
-    error::EdiError,
+    X12Parser,
+    EdiParser,  // Add this import for the trait
+    InterchangeControl, 
+    Segment, 
+    Transaction,
+    EdiError,
 };
 use std::fs;
 
