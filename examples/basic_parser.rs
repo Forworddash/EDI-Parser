@@ -1,0 +1,40 @@
+use edi_parser::{
+    parsers::x12::X12Parser,
+    models::InterchangeControl,
+    error::EdiError,
+};
+use std::fs;
+
+fn main() -> Result<(), EdiError> {
+    // Read EDI file
+    let content = fs::read_to_string("sample.edi")
+        .expect("Failed to read EDI file");
+    
+    // Parse the content
+    let parser = X12Parser::default();
+    let interchange = parser.parse(&content)?;
+    
+    // Validate the parsed structure
+    parser.validate(&interchange)?;
+    
+    // Print basic information
+    println!("Interchange Control Number: {}", 
+        interchange.isa_segment.elements[12]);
+    println!("Number of Functional Groups: {}", 
+        interchange.functional_groups.len());
+    
+    for (fg_index, fg) in interchange.functional_groups.iter().enumerate() {
+        println!("Functional Group {}:", fg_index + 1);
+        println!("  GS Code: {}", fg.gs_segment.elements[0]);
+        
+        for (tx_index, transaction) in fg.transactions.iter().enumerate() {
+            println!("  Transaction {}: {} ({})", 
+                tx_index + 1, 
+                transaction.transaction_set_id,
+                transaction.control_number);
+            println!("    Number of segments: {}", transaction.segments.len());
+        }
+    }
+    
+    Ok(())
+}
