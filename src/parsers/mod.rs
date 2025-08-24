@@ -8,5 +8,5 @@ pub trait EdiParser {
     fn validate(&self, interchange: &InterchangeControl) -> Result<(), EdiError>;
 }
 
-// Re-export the X12 parser for easier access
+// Re-export the X12 parser and the trait
 pub use x12::X12Parser;

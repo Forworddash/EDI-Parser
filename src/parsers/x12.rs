@@ -33,10 +33,14 @@ impl X12Parser {
         }
     }
 
+    fn trim_whitespace(&self, s: &str) -> String {
+        s.trim().to_string()
+    }
+
     fn parse_segment(&self, line: &str) -> Result<Segment, EdiError> {
         let elements: Vec<String> = line
             .split(self.element_separator)
-            .map(|s| s.to_string())
+            .map(|s| self.trim_whitespace(s)) // Trim whitespace from each element
             .collect();
         
         if elements.is_empty() {
@@ -46,7 +50,7 @@ impl X12Parser {
         Ok(Segment::new(elements[0].clone(), elements[1..].to_vec()))
     }
 
-    fn extract_delimiters_from_isa(isa_segment: &str) -> Result<(char, char, char), EdiError> {
+    fn extract_delimiters_from_isa(&self, isa_segment: &str) -> Result<(char, char, char), EdiError> {
         let elements: Vec<&str> = isa_segment.split('*').collect();
         if elements.len() < 16 {
             return Err(EdiError::InvalidSegmentFormat(isa_segment.to_string()));
@@ -57,6 +61,21 @@ impl X12Parser {
         let sub_element_separator = elements[16].chars().next().unwrap_or('>');
 
         Ok((element_separator, segment_separator, sub_element_separator))
+    }
+
+    fn parse_isa_segment(&self, isa_line: &str) -> Result<Segment, EdiError> {
+        // ISA segment has fixed-width fields, handle it specially
+        let trimmed = self.trim_whitespace(isa_line);
+        let elements: Vec<String> = trimmed
+            .split('*')
+            .map(|s| self.trim_whitespace(s))
+            .collect();
+        
+        if elements.len() < 16 {
+            return Err(EdiError::InvalidSegmentFormat(isa_line.to_string()));
+        }
+
+        Ok(Segment::new("ISA".to_string(), elements[1..].to_vec()))
     }
 }
 
@@ -72,9 +91,9 @@ impl EdiParser for X12Parser {
         }
 
         // Parse ISA segment first to get actual delimiters
-        let isa_segment = self.parse_segment(segments[0])?;
+        let isa_segment = self.parse_isa_segment(segments[0])?;
         let (actual_element_sep, actual_segment_sep, actual_sub_element_sep) = 
-            Self::extract_delimiters_from_isa(segments[0])?;
+            self.extract_delimiters_from_isa(segments[0])?; // Fixed: use self. instead of Self::
 
         let parser = if actual_element_sep != self.element_separator || 
             actual_segment_sep != self.segment_separator {
@@ -86,6 +105,7 @@ impl EdiParser for X12Parser {
         let mut functional_groups = Vec::new();
         let mut current_fg: Option<FunctionalGroup> = None;
         let mut current_transaction: Option<Transaction> = None;
+        let mut transaction_count = 0;
 
         for segment_str in segments.iter().skip(1) {
             let segment = parser.parse_segment(segment_str)?;
@@ -125,6 +145,7 @@ impl EdiParser for X12Parser {
                         transaction_set_id,
                         control_number,
                     ));
+                    transaction_count += 1;
                 }
                 "SE" => {
                     if let Some(mut transaction) = current_transaction.take() {

@@ -1,11 +1,6 @@
-// use edi_parser::{
-//     parsers::x12::X12Parser,
-//     models::{InterchangeControl, Segment, Transaction},
-//     error::EdiError,
-// };
 use edi_parser::{
     X12Parser,
-    EdiParser,  // Add this import for the trait
+    EdiParser,
     InterchangeControl, 
     Segment, 
     Transaction,
@@ -35,11 +30,18 @@ fn test_810_invoice_parsing() {
     let parser = X12Parser::default();
     let result = parser.parse(&content);
     
-    assert!(result.is_ok());
+    assert!(result.is_ok(), "Parse failed: {:?}", result.err());
     
     let interchange = result.unwrap();
-    assert_eq!(interchange.isa_segment.elements[5], "SENDERID");
-    assert_eq!(interchange.isa_segment.elements[6], "RECEIVERID");
+    
+    // Check that we have the right sender/receiver (trimmed)
+    assert_eq!(interchange.isa_segment.elements[4], "01"); // Authorization qualifier
+    assert_eq!(interchange.isa_segment.elements[5], "SENDERID"); // Sender ID (trimmed)
+    assert_eq!(interchange.isa_segment.elements[6], "01"); // Receiver qualifier
+    assert_eq!(interchange.isa_segment.elements[7], "RECEIVERID"); // Receiver ID (trimmed)
+    
+    assert!(interchange.functional_groups.len() > 0, "No functional groups found");
+    assert!(interchange.functional_groups[0].transactions.len() > 0, "No transactions found");
     
     let transaction = &interchange.functional_groups[0].transactions[0];
     assert_eq!(transaction.transaction_set_id, "810");
@@ -54,17 +56,25 @@ fn test_850_purchase_order_parsing() {
     let parser = X12Parser::default();
     let result = parser.parse(&content);
     
-    assert!(result.is_ok());
+    assert!(result.is_ok(), "Parse failed: {:?}", result.err());
     
     let interchange = result.unwrap();
+    
+    // Basic structure validation
+    assert!(interchange.functional_groups.len() > 0, "No functional groups found");
+    assert!(interchange.functional_groups[0].transactions.len() > 0, "No transactions found");
+    
     let transaction = &interchange.functional_groups[0].transactions[0];
     assert_eq!(transaction.transaction_set_id, "850");
     
-    // Verify specific segments exist
-    let has_beg = transaction.segments.iter().any(|s| s.id == "BEG");
-    let has_po1 = transaction.segments.iter().any(|s| s.id == "PO1");
-    assert!(has_beg);
-    assert!(has_po1);
+    // Verify specific segments exist by ID
+    let segment_ids: Vec<String> = transaction.segments.iter().map(|s| s.id.clone()).collect();
+    assert!(segment_ids.contains(&"ST".to_string()));
+    assert!(segment_ids.contains(&"BEG".to_string()));
+    assert!(segment_ids.contains(&"N1".to_string()));
+    assert!(segment_ids.contains(&"PO1".to_string()));
+    assert!(segment_ids.contains(&"CTT".to_string()));
+    assert!(segment_ids.contains(&"SE".to_string()));
 }
 
 #[test]
