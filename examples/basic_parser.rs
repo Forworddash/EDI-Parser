@@ -5,8 +5,7 @@
 // };
 use edi_parser::{
     X12Parser,
-    EdiParser,  // Add this import for the trait
-    InterchangeControl,
+    EdiParser,
     EdiError,
 };
 use std::fs;

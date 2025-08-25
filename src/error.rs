@@ -17,6 +17,9 @@ pub enum EdiError {
     #[error("Unsupported EDI standard: {0}")]
     UnsupportedStandard(String),
     
+    #[error("Unsupported transaction type: {0}")]
+    UnsupportedTransactionType(String),
+    
     #[error("Validation error: {0}")]
     ValidationError(String),
 }
