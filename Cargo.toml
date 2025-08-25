@@ -7,6 +7,11 @@ edition = "2021"
 thiserror = "1.0"
 regex = "1.0"
 lazy_static = "1.4"
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[features]
+default = []
+serde_support = ["serde"]
 
 [dev-dependencies]
 assert_matches = "1.5"

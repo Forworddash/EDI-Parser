@@ -4,10 +4,13 @@ use crate::{
     error::EdiError,
 };
 
+#[derive(Debug, Clone)]
 pub struct X12Parser {
     element_separator: char,
     segment_separator: char,
     sub_element_separator: char,
+    strict_validation: bool,
+    trim_whitespace: bool,
 }
 
 impl Default for X12Parser {
@@ -16,11 +19,14 @@ impl Default for X12Parser {
             element_separator: '*',
             segment_separator: '~',
             sub_element_separator: '>',
+            strict_validation: false,
+            trim_whitespace: true,
         }
     }
 }
 
 impl X12Parser {
+    /// Create parser with custom delimiters (legacy method)
     pub fn with_delimiters(
         element_separator: char,
         segment_separator: char,
@@ -30,11 +36,34 @@ impl X12Parser {
             element_separator,
             segment_separator,
             sub_element_separator,
+            strict_validation: false,
+            trim_whitespace: true,
+        }
+    }
+
+    /// Create parser with full configuration
+    pub fn with_config(
+        element_separator: char,
+        segment_separator: char,
+        sub_element_separator: char,
+        strict_validation: bool,
+        trim_whitespace: bool,
+    ) -> Self {
+        Self {
+            element_separator,
+            segment_separator,
+            sub_element_separator,
+            strict_validation,
+            trim_whitespace,
         }
     }
 
     fn trim_whitespace(&self, s: &str) -> String {
-        s.trim().to_string()
+        if self.trim_whitespace {
+            s.trim().to_string()
+        } else {
+            s.to_string()
+        }
     }
 
     fn parse_segment(&self, line: &str) -> Result<Segment, EdiError> {
@@ -105,7 +134,6 @@ impl EdiParser for X12Parser {
         let mut functional_groups = Vec::new();
         let mut current_fg: Option<FunctionalGroup> = None;
         let mut current_transaction: Option<Transaction> = None;
-        let mut transaction_count = 0;
 
         for segment_str in segments.iter().skip(1) {
             let segment = parser.parse_segment(segment_str)?;
@@ -145,7 +173,6 @@ impl EdiParser for X12Parser {
                         transaction_set_id,
                         control_number,
                     ));
-                    transaction_count += 1;
                 }
                 "SE" => {
                     if let Some(mut transaction) = current_transaction.take() {
@@ -187,27 +214,71 @@ impl EdiParser for X12Parser {
     }
 
     fn validate(&self, interchange: &InterchangeControl) -> Result<(), EdiError> {
-        // Basic validation logic
+        // Validate ISA segment
         if interchange.isa_segment.id != "ISA" {
             return Err(EdiError::MissingRequiredSegment("ISA".to_string()));
         }
+        
+        if interchange.isa_segment.elements.len() < 15 {
+            return Err(EdiError::InvalidSegmentFormat("ISA segment must have at least 15 elements".to_string()));
+        }
 
+        // Validate IEA segment if present
         if let Some(iea) = &interchange.iea_segment {
             if iea.id != "IEA" {
                 return Err(EdiError::InvalidControlStructure);
             }
+            
+            // Validate IEA control number matches ISA
+            if let (Some(isa_control), Some(iea_control)) = (
+                interchange.isa_segment.elements.get(12),
+                iea.elements.get(1)
+            ) {
+                if isa_control != iea_control {
+                    return Err(EdiError::ValidationError("IEA control number doesn't match ISA".to_string()));
+                }
+            }
+        }
+
+        // Validate functional groups
+        for fg in &interchange.functional_groups {
+            if fg.gs_segment.id != "GS" {
+                return Err(EdiError::MissingRequiredSegment("GS".to_string()));
+            }
+            
+            // Validate GE segment if present
+            if let Some(ge) = &fg.ge_segment {
+                if ge.id != "GE" {
+                    return Err(EdiError::InvalidControlStructure);
+                }
+                
+                // Validate GE control number matches GS
+                if let (Some(gs_control), Some(ge_control)) = (
+                    fg.gs_segment.elements.get(5),
+                    ge.elements.get(1)
+                ) {
+                    if gs_control != ge_control {
+                        return Err(EdiError::ValidationError("GE control number doesn't match GS".to_string()));
+                    }
+                }
+            }
+            
+            // Validate transactions
+            for transaction in &fg.transactions {
+                if let Some(st_segment) = transaction.segments.first() {
+                    if st_segment.id != "ST" {
+                        return Err(EdiError::MissingRequiredSegment("ST".to_string()));
+                    }
+                }
+                
+                if let Some(se_segment) = transaction.segments.last() {
+                    if se_segment.id != "SE" {
+                        return Err(EdiError::MissingRequiredSegment("SE".to_string()));
+                    }
+                }
+            }
         }
 
         Ok(())
-    }
-}
-
-impl Clone for X12Parser {
-    fn clone(&self) -> Self {
-        Self {
-            element_separator: self.element_separator,
-            segment_separator: self.segment_separator,
-            sub_element_separator: self.sub_element_separator,
-        }
     }
 }
