@@ -95,7 +95,7 @@ fn test_segment_registry() {
     let cur_def = registry.get_definition(&X12Version::V4010, "CUR").unwrap();
     assert_eq!(cur_def.id, "CUR");
     assert_eq!(cur_def.name, "Currency");
-    assert_eq!(cur_def.elements.len(), 2);
+    assert_eq!(cur_def.elements.len(), 3); // CUR has 3 elements: Entity ID, Currency Code, Exchange Rate
 }
 
 #[test]

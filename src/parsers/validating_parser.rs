@@ -174,7 +174,7 @@ mod tests {
             vec![
                 "BY".to_string(),     // Entity Identifier Code (98)
                 "USD".to_string(),    // Currency Code (100)
-                "1.0".to_string(),    // Exchange Rate (280)
+                "1.000".to_string(),  // Exchange Rate (280) - minimum 4 chars
             ],
         );
 

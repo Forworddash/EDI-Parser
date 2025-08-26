@@ -4,6 +4,7 @@ use crate::{
     error::EdiError,
 };
 
+#[derive(Debug)]
 pub struct X12Parser {
     element_separator: char,
     segment_separator: char,
@@ -21,6 +22,11 @@ impl Default for X12Parser {
 }
 
 impl X12Parser {
+    /// Create a new X12Parser with default delimiters
+    pub fn new() -> Self {
+        Self::with_delimiters('*', '~', ':')
+    }
+
     pub fn with_delimiters(
         element_separator: char,
         segment_separator: char,

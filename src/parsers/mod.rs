@@ -1,6 +1,7 @@
 pub mod x12;
 pub mod common;
 pub mod validating_parser;
+pub mod schema_validating_parser;
 
 use crate::{models::InterchangeControl, error::EdiError};
 

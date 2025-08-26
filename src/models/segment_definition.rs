@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::error::EdiError;
 
 /// Represents the requirement level of an element in an EDI segment
 #[derive(Debug, Clone, PartialEq)]
@@ -66,7 +67,7 @@ pub struct SegmentDefinition {
 }
 
 /// X12 version enumeration
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum X12Version {
     V4010,
     V5010,
@@ -327,69 +328,6 @@ impl SegmentRegistry {
     }
 
     fn register_dtm_segment(&mut self) {
-        // Placeholder for DTM segment
-    }
-
-    fn register_n1_segment(&mut self) {
-        // Placeholder for N1 segment
-    }
-
-    fn register_ctt_segment(&mut self) {
-        // Placeholder for CTT segment
-    }
-
-    fn register_ref_segment(&mut self) {
-        let ref_definition = SegmentDefinition {
-            id: "REF".to_string(),
-            name: "Reference Identification".to_string(),
-            elements: vec![
-                ElementDefinition {
-                    element_id: 128,
-                    name: "Reference Identification Qualifier".to_string(),
-                    data_type: ElementDataType::ID,
-                    min_length: Some(2),
-                    max_length: Some(3),
-                    requirement: ElementRequirement::Mandatory,
-                    description: "Code qualifying the Reference Identification".to_string(),
-                    valid_codes: Some(vec![
-                        "DP".to_string(), // Department Number
-                        "IA".to_string(), // Internal Vendor Number
-                        "PD".to_string(), // Promotion/Deal Number
-                        "VN".to_string(), // Vendor Order Number
-                    ]),
-                },
-                ElementDefinition {
-                    element_id: 127,
-                    name: "Reference Identification".to_string(),
-                    data_type: ElementDataType::AN,
-                    min_length: Some(1),
-                    max_length: Some(50),
-                    requirement: ElementRequirement::Mandatory,
-                    description: "Reference information as defined for a particular Transaction Set or as specified by the Reference Identification Qualifier".to_string(),
-                    valid_codes: None,
-                },
-                ElementDefinition {
-                    element_id: 352,
-                    name: "Description".to_string(),
-                    data_type: ElementDataType::AN,
-                    min_length: Some(1),
-                    max_length: Some(80),
-                    requirement: ElementRequirement::Optional,
-                    description: "A free-form description to clarify the related data elements and their content".to_string(),
-                    valid_codes: None,
-                },
-            ],
-            min_usage: 0,
-            max_usage: None, // Can repeat
-            description: "To specify identifying information".to_string(),
-        };
-
-        self.register_segment(X12Version::V4010, ref_definition.clone());
-        self.register_segment(X12Version::V5010, ref_definition.clone());
-        self.register_segment(X12Version::V8010, ref_definition);
-    }
-
-    fn register_dtm_segment(&mut self) {
         let dtm_definition = SegmentDefinition {
             id: "DTM".to_string(),
             name: "Date/Time Reference".to_string(),
@@ -503,67 +441,6 @@ impl SegmentRegistry {
         self.register_segment(X12Version::V4010, n1_definition.clone());
         self.register_segment(X12Version::V5010, n1_definition.clone());
         self.register_segment(X12Version::V8010, n1_definition);
-    }
-
-    fn register_po1_segment(&mut self) {
-        let po1_definition = SegmentDefinition {
-            id: "PO1".to_string(),
-            name: "Baseline Item Data".to_string(),
-            elements: vec![
-                ElementDefinition {
-                    element_id: 350,
-                    name: "Assigned Identification".to_string(),
-                    data_type: ElementDataType::AN,
-                    min_length: Some(1),
-                    max_length: Some(20),
-                    requirement: ElementRequirement::Optional,
-                    description: "Alphanumeric characters assigned for differentiation within a transaction set".to_string(),
-                    valid_codes: None,
-                },
-                ElementDefinition {
-                    element_id: 330,
-                    name: "Quantity Ordered".to_string(),
-                    data_type: ElementDataType::R,
-                    min_length: Some(1),
-                    max_length: Some(15),
-                    requirement: ElementRequirement::Mandatory,
-                    description: "Quantity ordered".to_string(),
-                    valid_codes: None,
-                },
-                ElementDefinition {
-                    element_id: 355,
-                    name: "Unit or Basis for Measurement Code".to_string(),
-                    data_type: ElementDataType::ID,
-                    min_length: Some(2),
-                    max_length: Some(2),
-                    requirement: ElementRequirement::Mandatory,
-                    description: "Code specifying the units in which a value is being expressed".to_string(),
-                    valid_codes: Some(vec![
-                        "EA".to_string(), // Each
-                        "CS".to_string(), // Case
-                        "BX".to_string(), // Box
-                        "DZ".to_string(), // Dozen
-                    ]),
-                },
-                ElementDefinition {
-                    element_id: 212,
-                    name: "Unit Price".to_string(),
-                    data_type: ElementDataType::R,
-                    min_length: Some(1),
-                    max_length: Some(17),
-                    requirement: ElementRequirement::Mandatory,
-                    description: "Price per unit of product, service, commodity, etc.".to_string(),
-                    valid_codes: None,
-                },
-            ],
-            min_usage: 1,
-            max_usage: None, // Can repeat
-            description: "To specify basic and most frequently used line item data for the purchase order".to_string(),
-        };
-
-        self.register_segment(X12Version::V4010, po1_definition.clone());
-        self.register_segment(X12Version::V5010, po1_definition.clone());
-        self.register_segment(X12Version::V8010, po1_definition);
     }
 
     fn register_ctt_segment(&mut self) {
