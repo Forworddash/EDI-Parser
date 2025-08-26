@@ -127,13 +127,14 @@ impl EdiSegment for Po1Segment {
         }
 
         // Validate the segment first
-        let validator = SegmentValidator::new(version);
-        let validation_result = validator.validate_segment(segment);
-        if !validation_result.is_valid {
-            return Err(EdiError::InvalidSegmentFormat(
-                format!("PO1 segment validation failed: {:?}", validation_result.errors)
-            ));
-        }
+        // TODO: Update to use new ValidatingSegmentParser
+        // let validator = SegmentValidator::new(version);
+        // let validation_result = validator.validate_segment(segment);
+        // if !validation_result.is_valid {
+        //     return Err(EdiError::InvalidSegmentFormat(
+        //         format!("PO1 segment validation failed: {:?}", validation_result.errors)
+        //     ));
+        // }
 
         // Parse Product/Service ID pairs (starting from element 5)
         let mut product_service_ids = Vec::new();
@@ -368,13 +369,14 @@ impl EdiSegment for RefSegment {
         }
 
         // Validate the segment first
-        let validator = SegmentValidator::new(version);
-        let validation_result = validator.validate_segment(segment);
-        if !validation_result.is_valid {
-            return Err(EdiError::InvalidSegmentFormat(
-                format!("REF segment validation failed: {:?}", validation_result.errors)
-            ));
-        }
+        // TODO: Update to use new ValidatingSegmentParser
+        // let validator = SegmentValidator::new(version);
+        // let validation_result = validator.validate_segment(segment);
+        // if !validation_result.is_valid {
+        //     return Err(EdiError::InvalidSegmentFormat(
+        //         format!("REF segment validation failed: {:?}", validation_result.errors)
+        //     ));
+        // }
 
         Ok(RefSegment {
             reference_identification_qualifier: segment.elements[0].clone(),

@@ -10,3 +10,7 @@ lazy_static = "1.4"
 
 [dev-dependencies]
 assert_matches = "1.5"
+
+[[example]]
+name = "element_id_validation"
+path = "examples/element_id_validation.rs"

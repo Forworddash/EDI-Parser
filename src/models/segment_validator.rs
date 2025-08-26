@@ -2,7 +2,7 @@ use crate::{
     error::EdiError,
     models::{
         Segment,
-        segment_definition::{SegmentRegistry, SegmentDefinition, ElementDefinition, ElementDataType, X12Version}
+        segment_definition::{SegmentRegistry, SegmentDefinition, ElementDefinition, ElementDataType, ElementRequirement, X12Version}
     }
 };
 use regex::Regex;
@@ -108,10 +108,10 @@ impl SegmentValidator {
 
         // Validate each element
         for (index, element_def) in definition.elements.iter().enumerate() {
-            let element_value = segment.elements.get(index);
+            let element_value: Option<&String> = segment.elements.get(index);
 
             // Check required elements
-            if element_def.required && (element_value.is_none() || element_value.unwrap().is_empty()) {
+            if element_def.requirement == ElementRequirement::Mandatory && (element_value.is_none() || element_value.unwrap().is_empty()) {
                 errors.push(ValidationError {
                     element_position: Some(index + 1),
                     error_type: ValidationErrorType::MissingRequiredElement,
@@ -150,7 +150,7 @@ impl SegmentValidator {
     ) {
         // Check length constraints
         if let Some(min_length) = definition.min_length {
-            if value.len() < min_length {
+            if value.len() < min_length as usize {
                 errors.push(ValidationError {
                     element_position: Some(position),
                     error_type: ValidationErrorType::InvalidLength,
@@ -166,7 +166,7 @@ impl SegmentValidator {
         }
 
         if let Some(max_length) = definition.max_length {
-            if value.len() > max_length {
+            if value.len() > max_length as usize {
                 errors.push(ValidationError {
                     element_position: Some(position),
                     error_type: ValidationErrorType::InvalidLength,
@@ -246,6 +246,20 @@ impl SegmentValidator {
                         element_position: Some(position),
                         message: format!(
                             "Element '{}' at position {} contains non-printable characters",
+                            definition.name,
+                            position
+                        ),
+                    });
+                }
+            }
+            ElementDataType::B => {
+                // Binary data - for now just ensure it's not empty if required
+                if value.is_empty() && definition.requirement == ElementRequirement::Mandatory {
+                    errors.push(ValidationError {
+                        element_position: Some(position),
+                        error_type: ValidationErrorType::MissingRequiredElement,
+                        message: format!(
+                            "Element '{}' at position {} is required but empty",
                             definition.name,
                             position
                         ),

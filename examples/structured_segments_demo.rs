@@ -1,5 +1,5 @@
 use edi_parser::{
-    X12Parser, EdiParser,
+    X12Parser, EdiParser, ElementRequirement,
     models::{
         structured_segments::{EdiSegment, BegSegment, Po1Segment, N1Segment, CttSegment, RefSegment},
         segment_definition::X12Version,
@@ -230,7 +230,11 @@ IEA*1*000000002~"#;
                      format!("{}-{}", 
                              element.min_length.map(|l| l.to_string()).unwrap_or("?".to_string()),
                              element.max_length.map(|l| l.to_string()).unwrap_or("?".to_string())),
-                     if element.required { "Required" } else { "Optional" });
+                     match element.requirement {
+                         ElementRequirement::Mandatory => "Required",
+                         ElementRequirement::Optional => "Optional",
+                         ElementRequirement::Conditional => "Conditional",
+                     });
         }
     }
 

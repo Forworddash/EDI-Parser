@@ -1,5 +1,6 @@
 pub mod x12;
 pub mod common;
+pub mod validating_parser;
 
 use crate::{models::InterchangeControl, error::EdiError};
 
@@ -8,5 +9,6 @@ pub trait EdiParser {
     fn validate(&self, interchange: &InterchangeControl) -> Result<(), EdiError>;
 }
 
-// Re-export the X12 parser and the trait
+// Re-export commonly used types
 pub use x12::X12Parser;
+pub use validating_parser::ValidatingSegmentParser;
