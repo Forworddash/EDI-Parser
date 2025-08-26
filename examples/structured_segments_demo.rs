@@ -1,7 +1,7 @@
 use edi_parser::{
     X12Parser, EdiParser,
     models::{
-        structured_segments::{EdiSegment, BegSegment, Po1Segment, N1Segment, CttSegment},
+        structured_segments::{EdiSegment, BegSegment, Po1Segment, N1Segment, CttSegment, RefSegment},
         segment_definition::X12Version,
         segment_validator::SegmentValidator,
     }
@@ -163,6 +163,32 @@ IEA*1*000000002~"#;
                                 }
                             }
                             Err(e) => println!("❌ Failed to parse CTT segment: {}", e),
+                        }
+                    }
+                    "REF" => {
+                        println!("\n📄 REF - Reference Information");
+                        
+                        let validation_result = validator.validate_segment(segment);
+                        if !validation_result.is_valid {
+                            println!("❌ Validation errors:");
+                            for error in &validation_result.errors {
+                                println!("   - {}", error.message);
+                            }
+                            continue;
+                        }
+                        
+                        match RefSegment::from_segment(segment, version.clone()) {
+                            Ok(ref_seg) => {
+                                println!("✅ Successfully parsed REF segment:");
+                                println!("   - Reference Qualifier: {}", ref_seg.reference_identification_qualifier);
+                                if let Some(ref_id) = &ref_seg.reference_identification {
+                                    println!("   - Reference ID: {}", ref_id);
+                                }
+                                if let Some(desc) = &ref_seg.description {
+                                    println!("   - Description: {}", desc);
+                                }
+                            }
+                            Err(e) => println!("❌ Failed to parse REF segment: {}", e),
                         }
                     }
                     _ => {

@@ -276,6 +276,14 @@ pub struct CttSegment {
     pub hash_total: Option<f64>,
 }
 
+/// REF - Reference Information
+#[derive(Debug, Clone, PartialEq)]
+pub struct RefSegment {
+    pub reference_identification_qualifier: String,
+    pub reference_identification: Option<String>,
+    pub description: Option<String>,
+}
+
 impl EdiSegment for CttSegment {
     fn segment_id() -> &'static str {
         "CTT"
@@ -341,6 +349,69 @@ impl EdiSegment for CttSegment {
     }
 }
 
+impl EdiSegment for RefSegment {
+    fn segment_id() -> &'static str {
+        "REF"
+    }
+
+    fn from_segment(segment: &Segment, version: X12Version) -> Result<Self, EdiError> {
+        if segment.id != Self::segment_id() {
+            return Err(EdiError::InvalidSegmentFormat(
+                format!("Expected {} segment, got {}", Self::segment_id(), segment.id)
+            ));
+        }
+
+        if segment.elements.is_empty() {
+            return Err(EdiError::InvalidSegmentFormat(
+                "REF segment requires at least 1 element".to_string()
+            ));
+        }
+
+        // Validate the segment first
+        let validator = SegmentValidator::new(version);
+        let validation_result = validator.validate_segment(segment);
+        if !validation_result.is_valid {
+            return Err(EdiError::InvalidSegmentFormat(
+                format!("REF segment validation failed: {:?}", validation_result.errors)
+            ));
+        }
+
+        Ok(RefSegment {
+            reference_identification_qualifier: segment.elements[0].clone(),
+            reference_identification: Self::get_optional_element(&segment.elements, 1),
+            description: Self::get_optional_element(&segment.elements, 2),
+        })
+    }
+
+    fn to_segment(&self) -> Segment {
+        let mut elements = vec![
+            self.reference_identification_qualifier.clone(),
+            self.reference_identification.clone().unwrap_or_default(),
+            self.description.clone().unwrap_or_default(),
+        ];
+
+        // Remove trailing empty elements
+        while elements.len() > 1 && elements.last().map_or(false, |e| e.is_empty()) {
+            elements.pop();
+        }
+
+        Segment::new(Self::segment_id().to_string(), elements)
+    }
+
+    fn validate(&self, version: X12Version) -> SegmentValidationResult {
+        let validator = SegmentValidator::new(version);
+        validator.validate_segment(&self.to_segment())
+    }
+}
+
+impl RefSegment {
+    fn get_optional_element(elements: &[String], index: usize) -> Option<String> {
+        elements.get(index)
+            .filter(|s| !s.is_empty())
+            .cloned()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -394,5 +465,26 @@ mod tests {
         assert_eq!(po1.product_service_ids.len(), 1);
         assert_eq!(po1.product_service_ids[0].qualifier, "BP");
         assert_eq!(po1.product_service_ids[0].id, "ITEM-001");
+    }
+
+    #[test]
+    fn test_ref_segment_creation() {
+        let segment = Segment::new(
+            "REF".to_string(),
+            vec![
+                "PO".to_string(),
+                "ORDER123".to_string(),
+                "Purchase Order Reference".to_string(),
+            ],
+        );
+
+        let ref_seg = RefSegment::from_segment(&segment, X12Version::V4010).unwrap();
+        assert_eq!(ref_seg.reference_identification_qualifier, "PO");
+        assert_eq!(ref_seg.reference_identification, Some("ORDER123".to_string()));
+        assert_eq!(ref_seg.description, Some("Purchase Order Reference".to_string()));
+
+        let back_to_segment = ref_seg.to_segment();
+        assert_eq!(back_to_segment.id, "REF");
+        assert_eq!(back_to_segment.elements.len(), 3);
     }
 }
