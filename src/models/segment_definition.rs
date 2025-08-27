@@ -206,12 +206,13 @@ impl SegmentRegistry {
                     max_length: Some(3),
                     requirement: ElementRequirement::Mandatory,
                     description: "Code identifying an organizational entity, a physical location, property or an individual".to_string(),
-                    valid_codes: Some(vec![
-                        "BY".to_string(), // Buying Party
-                        "SE".to_string(), // Selling Party
-                        "PR".to_string(), // Payer
-                        "PE".to_string(), // Payee
-                    ]),
+                    valid_codes: None,
+                    // valid_codes: Some(vec![
+                    //     "BY".to_string(), // Buying Party
+                    //     "SE".to_string(), // Selling Party
+                    //     "PR".to_string(), // Payer
+                    //     "PE".to_string(), // Payee
+                    // ]),
                 },
                 ElementDefinition {
                     element_id: 100,
@@ -221,13 +222,14 @@ impl SegmentRegistry {
                     max_length: Some(3),
                     requirement: ElementRequirement::Mandatory,
                     description: "Code (Standard ISO) for country in whose currency the charges are specified".to_string(),
-                    valid_codes: Some(vec![
-                        "USD".to_string(), // US Dollar
-                        "CAD".to_string(), // Canadian Dollar
-                        "EUR".to_string(), // Euro
-                        "GBP".to_string(), // British Pound
-                        "JPY".to_string(), // Japanese Yen
-                    ]),
+                    valid_codes: None,
+                    // valid_codes: Some(vec![
+                    //     "USD".to_string(), // US Dollar
+                    //     "CAD".to_string(), // Canadian Dollar
+                    //     "EUR".to_string(), // Euro
+                    //     "GBP".to_string(), // British Pound
+                    //     "JPY".to_string(), // Japanese Yen
+                    // ]),
                 },
                 ElementDefinition {
                     element_id: 280,
@@ -239,6 +241,186 @@ impl SegmentRegistry {
                     description: "Value to be used as a multiplier conversion factor to convert monetary value from one currency to another".to_string(),
                     valid_codes: None,
                 },
+                ElementDefinition {
+                    element_id: 98,
+                    name: "Entity Identifier Code".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(2),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Optional,
+                    description: "Code identifying an organizational entity, a physical location, property or an individual".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 100,
+                    name: "Currency Code".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Mandatory,
+                    description: "Code (Standard ISO) for country in whose currency the charges are specified".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 669,
+                    name: "Currency Market/Exchange Rate".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Optional,
+                    description: "Code identifying the market upon which the currency exchange rate is based".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 374,
+                    name: "Date/Time Qualifier".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Optional,
+                    description: "Code specifying type of date or time, or both date and time".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 373,
+                    name: "Date".to_string(),
+                    data_type: ElementDataType::DT,
+                    min_length: Some(8),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Optional,
+                    description: "Date expressed as CCYYMMDD".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 337,
+                    name: "Time".to_string(),
+                    data_type: ElementDataType::TM,
+                    min_length: Some(4),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Optional,
+                    description: "Time expressed in 24-hour clock time as follows: HHMM, or HHMMSS, or HHMMSSD, or HHMMSSDD, where H = hours (00-23), M = minutes (00-59), S = integer seconds (00-59) and DD = decimal seconds; decimal seconds are expressed as follows: D = tenths (0-9) and DD = hundredths (00-99)".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 374,
+                    name: "Date/Time Qualifier".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Code specifying type of date or time, or both date and time".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 373,
+                    name: "Date".to_string(),
+                    data_type: ElementDataType::DT,
+                    min_length: Some(8),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Date expressed as CCYYMMDD".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 337,
+                    name: "Time".to_string(),
+                    data_type: ElementDataType::TM,
+                    min_length: Some(4),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Time expressed in 24-hour clock time as follows: HHMM, or HHMMSS, or HHMMSSD, or HHMMSSDD, where H = hours (00-23), M = minutes (00-59), S = integer seconds (00-59) and DD = decimal seconds; decimal seconds are expressed as follows: D = tenths (0-9) and DD = hundredths (00-99)".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 374,
+                    name: "Date/Time Qualifier".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Code specifying type of date or time, or both date and time".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 373,
+                    name: "Date".to_string(),
+                    data_type: ElementDataType::DT,
+                    min_length: Some(8),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Date expressed as CCYYMMDD".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 337,
+                    name: "Time".to_string(),
+                    data_type: ElementDataType::TM,
+                    min_length: Some(4),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Time expressed in 24-hour clock time as follows: HHMM, or HHMMSS, or HHMMSSD, or HHMMSSDD, where H = hours (00-23), M = minutes (00-59), S = integer seconds (00-59) and DD = decimal seconds; decimal seconds are expressed as follows: D = tenths (0-9) and DD = hundredths (00-99)".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 374,
+                    name: "Date/Time Qualifier".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Code specifying type of date or time, or both date and time".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 373,
+                    name: "Date".to_string(),
+                    data_type: ElementDataType::DT,
+                    min_length: Some(8),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Date expressed as CCYYMMDD".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 337,
+                    name: "Time".to_string(),
+                    data_type: ElementDataType::TM,
+                    min_length: Some(4),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Time expressed in 24-hour clock time as follows: HHMM, or HHMMSS, or HHMMSSD, or HHMMSSDD, where H = hours (00-23), M = minutes (00-59), S = integer seconds (00-59) and DD = decimal seconds; decimal seconds are expressed as follows: D = tenths (0-9) and DD = hundredths (00-99)".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 374,
+                    name: "Date/Time Qualifier".to_string(),
+                    data_type: ElementDataType::ID,
+                    min_length: Some(3),
+                    max_length: Some(3),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Code specifying type of date or time, or both date and time".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 373,
+                    name: "Date".to_string(),
+                    data_type: ElementDataType::DT,
+                    min_length: Some(8),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Date expressed as CCYYMMDD".to_string(),
+                    valid_codes: None,
+                },
+                ElementDefinition {
+                    element_id: 337,
+                    name: "Time".to_string(),
+                    data_type: ElementDataType::TM,
+                    min_length: Some(4),
+                    max_length: Some(8),
+                    requirement: ElementRequirement::Conditional,
+                    description: "Time expressed in 24-hour clock time as follows: HHMM, or HHMMSS, or HHMMSSD, or HHMMSSDD, where H = hours (00-23), M = minutes (00-59), S = integer seconds (00-59) and DD = decimal seconds; decimal seconds are expressed as follows: D = tenths (0-9) and DD = hundredths (00-99)".to_string(),
+                    valid_codes: None,
+                }
             ],
             min_usage: 0,
             max_usage: Some(1),
