@@ -13,7 +13,7 @@ use std::fs;
 
 fn main() -> Result<(), EdiError> {
     // Read EDI file
-    let content = fs::read_to_string("sample.edi")
+    let content = fs::read_to_string("tests/test_files/sample_810.edi")
         .expect("Failed to read EDI file");
     
     // Parse the content
@@ -24,6 +24,7 @@ fn main() -> Result<(), EdiError> {
     parser.validate(&interchange)?;
     
     // Print basic information
+    println!("EDI Version: {}", interchange.version.as_str());
     println!("Interchange Control Number: {}", 
         interchange.isa_segment.elements[12]);
     println!("Number of Functional Groups: {}", 
@@ -34,10 +35,11 @@ fn main() -> Result<(), EdiError> {
         println!("  GS Code: {}", fg.gs_segment.elements[0]);
         
         for (tx_index, transaction) in fg.transactions.iter().enumerate() {
-            println!("  Transaction {}: {} ({})", 
+            println!("  Transaction {}: {} ({}) - Type: {:?}", 
                 tx_index + 1, 
                 transaction.transaction_set_id,
-                transaction.control_number);
+                transaction.control_number,
+                transaction.transaction_type);
             println!("    Number of segments: {}", transaction.segments.len());
         }
     }

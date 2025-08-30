@@ -1,6 +1,6 @@
 use super::EdiParser;
 use crate::{
-    models::{InterchangeControl, FunctionalGroup, Transaction, Segment},
+    models::{InterchangeControl, FunctionalGroup, Transaction, Segment, X12Version},
     error::EdiError,
 };
 
@@ -179,10 +179,13 @@ impl EdiParser for X12Parser {
             .map(|s| parser.parse_segment(s))
             .transpose()?;
 
+        let version = X12Version::from_isa(&isa_segment)?;
+
         Ok(InterchangeControl {
             isa_segment,
             iea_segment,
             functional_groups,
+            version,
         })
     }
 
@@ -195,6 +198,22 @@ impl EdiParser for X12Parser {
         if let Some(iea) = &interchange.iea_segment {
             if iea.id != "IEA" {
                 return Err(EdiError::InvalidControlStructure);
+            }
+        }
+
+        // Validate each transaction has required segments
+        for fg in &interchange.functional_groups {
+            for transaction in &fg.transactions {
+                let required_segments = transaction.transaction_type.required_segments();
+                let segment_ids: Vec<String> = transaction.segments.iter().map(|s| s.id.clone()).collect();
+                
+                for required in required_segments {
+                    if !segment_ids.contains(&required.to_string()) {
+                        return Err(EdiError::MissingRequiredSegment(
+                            format!("{} in transaction {}", required, transaction.transaction_set_id)
+                        ));
+                    }
+                }
             }
         }
 
