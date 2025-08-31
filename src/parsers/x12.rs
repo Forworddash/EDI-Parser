@@ -145,7 +145,7 @@ impl EdiParser for X12Parser {
                         transaction_set_id,
                         control_number,
                     ));
-                    transaction_count += 1;
+                    _transaction_count += 1;
                 }
                 "SE" => {
                     if let Some(mut transaction) = current_transaction.take() {
