@@ -201,7 +201,7 @@ impl EdiParser for X12Parser {
             }
         }
 
-        // Validate each transaction has required segments
+        // Validate each transaction has required segments and validate segment content
         for fg in &interchange.functional_groups {
             for transaction in &fg.transactions {
                 let required_segments = transaction.transaction_type.required_segments();
@@ -211,6 +211,15 @@ impl EdiParser for X12Parser {
                     if !segment_ids.contains(&required.to_string()) {
                         return Err(EdiError::MissingRequiredSegment(
                             format!("{} in transaction {}", required, transaction.transaction_set_id)
+                        ));
+                    }
+                }
+
+                // Validate individual segments
+                for segment in &transaction.segments {
+                    if let Err(validation_msg) = transaction.transaction_type.validate_segment(segment) {
+                        return Err(EdiError::ValidationError(
+                            format!("Transaction {}: {}", transaction.transaction_set_id, validation_msg)
                         ));
                     }
                 }

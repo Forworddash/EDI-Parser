@@ -1,0 +1,27 @@
+ISA*00*          *00*          *01*BUYERID      *01*SELLERID     *230101*1300*U*00401*000000002*0*T*>~
+GS*PO*BUYERID*SELLERID*20230101*1300*2*X*004010~
+ST*850*0001~
+BEG*00*SA*PO-001**20230101~
+REF*VR*Vendor-123~
+DTM*002*20230115~
+DTM*010*20230215~
+N1*ST*ABC Corporation*92*12345~
+N1*BT*ABC Corporation*92*12345~
+N1*SE*XYZ Shipping*92*67890~
+N2*Additional Name Line~
+N3*123 Main Street*Suite 100~
+N4*Anytown*ST*12345*US~
+PER*BD*John Doe*TE*555-1234*EM*john@abc.com~
+FOB*PP*01*DF*ZZ~
+ITD*05*3*0*0*0*0*0*0*0~
+PO1*1*100*EA*10.50**BP*ITEM-001*VP*Vendor Part 001*SZ*Large~
+PID*F****Widget Description Line 1~
+PID*F****Widget Description Line 2~
+PO1*2*50*EA*25.00**BP*ITEM-002*VP*Another Part*SZ*Medium~
+PID*F****Another Widget Description~
+SAC*A*H850****0.00~
+TD5*A*2*ZZ*ZZ~
+CTT*2*150~
+SE*20*0001~
+GE*1*2~
+IEA*1*000000002~

@@ -95,3 +95,51 @@ fn test_validation() {
     
     assert!(validation_result.is_ok());
 }
+
+#[test]
+fn test_850_extended_parsing() {
+    let content = fs::read_to_string("tests/test_files/sample_850_extended.edi")
+        .expect("Failed to read extended test file");
+
+    let parser = X12Parser::default();
+    let result = parser.parse(&content);
+
+    assert!(result.is_ok(), "Parse failed: {:?}", result.err());
+
+    let interchange = result.unwrap();
+
+    // Basic structure validation
+    assert!(interchange.functional_groups.len() > 0, "No functional groups found");
+    assert!(interchange.functional_groups[0].transactions.len() > 0, "No transactions found");
+
+    let transaction = &interchange.functional_groups[0].transactions[0];
+    assert_eq!(transaction.transaction_set_id, "850");
+
+    // Check for additional segments
+    let segment_ids: Vec<String> = transaction.segments.iter().map(|s| s.id.clone()).collect();
+    assert!(segment_ids.contains(&"REF".to_string()), "Missing REF segment");
+    assert!(segment_ids.contains(&"DTM".to_string()), "Missing DTM segment");
+    assert!(segment_ids.contains(&"PER".to_string()), "Missing PER segment");
+    assert!(segment_ids.contains(&"FOB".to_string()), "Missing FOB segment");
+    assert!(segment_ids.contains(&"ITD".to_string()), "Missing ITD segment");
+    assert!(segment_ids.contains(&"PID".to_string()), "Missing PID segment");
+    assert!(segment_ids.contains(&"SAC".to_string()), "Missing SAC segment");
+    assert!(segment_ids.contains(&"TD5".to_string()), "Missing TD5 segment");
+
+    // Validate the parsed structure
+    let validation_result = parser.validate(&interchange);
+    assert!(validation_result.is_ok(), "Validation failed: {:?}", validation_result.err());
+}
+
+#[test]
+fn test_invalid_850_segment() {
+    let parser = X12Parser::default();
+    // Create an 850 with invalid BEG segment (missing required elements)
+    let input = "ISA*00*          *00*          *01*BUYERID      *01*SELLERID     *230101*1300*U*00401*000000002*0*T*>~GS*PO*BUYERID*SELLERID*20230101*1300*2*X*004010~ST*850*0001~BEG*00~SE*2*0001~GE*1*2~IEA*1*000000002~";
+
+    let interchange = parser.parse(input).unwrap();
+    let validation_result = parser.validate(&interchange);
+
+    // Should fail validation due to incomplete BEG segment
+    assert!(validation_result.is_err());
+}
