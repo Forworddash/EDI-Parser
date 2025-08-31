@@ -86,6 +86,47 @@ impl TransactionType {
                 }
                 Ok(())
             }
+            "DTM" => {
+                // DTM: Date/Time Reference
+                // DTM01: Date/Time Qualifier (002=Delivery Requested, 010=Requested Ship, etc.)
+                // DTM02: Date (CCYYMMDD format)
+                // DTM03: Time (HHMM format, optional)
+                if segment.elements.is_empty() {
+                    return Err("DTM segment requires at least 1 element".to_string());
+                }
+
+                let qualifier = &segment.elements[0];
+                let valid_qualifiers = [
+                    "002", "010", "011", "017", "035", "036", "037", "038", "063", "064",
+                    "069", "070", "071", "072", "073", "074", "075", "076", "077", "078"
+                ];
+
+                if !valid_qualifiers.contains(&qualifier.as_str()) {
+                    return Err(format!("Invalid DTM01 qualifier: {} (valid: delivery dates, ship dates, etc.)", qualifier));
+                }
+
+                // Validate date format if present
+                if segment.elements.len() > 1 {
+                    let date = &segment.elements[1];
+                    if date.len() == 8 && date.chars().all(|c| c.is_numeric()) {
+                        // Valid CCYYMMDD format
+                    } else if !date.is_empty() {
+                        return Err(format!("Invalid date format: {} (expected CCYYMMDD)", date));
+                    }
+                }
+
+                // Validate time format if present
+                if segment.elements.len() > 2 {
+                    let time = &segment.elements[2];
+                    if time.len() == 4 && time.chars().all(|c| c.is_numeric()) {
+                        // Valid HHMM format
+                    } else if !time.is_empty() {
+                        return Err(format!("Invalid time format: {} (expected HHMM)", time));
+                    }
+                }
+
+                Ok(())
+            }
             _ => Ok(()), // Other segments don't have specific validation yet
         }
     }
