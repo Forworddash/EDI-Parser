@@ -2,6 +2,20 @@
 name = "edi-parser"
 version = "0.1.0"
 edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A high-performance EDI (Electronic Data Interchange) parser written in Rust, supporting X12 format with extensible segment validation and loop-aware parsing."
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/Forworddash/EDI-Parser"
+repository = "https://github.com/Forworddash/EDI-Parser"
+documentation = "https://docs.rs/edi-parser"
+keywords = ["edi", "parser", "x12", "electronic-data-interchange", "business"]
+categories = ["parsing", "api-bindings", "encoding"]
+exclude = [
+    "test_setup.sh",
+    "edi_template.txt",
+    "tests/test_files/invalid_sample.edi"
+]
 
 [dependencies]
 thiserror = "1.0"

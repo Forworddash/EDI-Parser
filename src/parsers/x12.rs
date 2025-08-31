@@ -105,7 +105,7 @@ impl EdiParser for X12Parser {
         let mut functional_groups = Vec::new();
         let mut current_fg: Option<FunctionalGroup> = None;
         let mut current_transaction: Option<Transaction> = None;
-        let mut transaction_count = 0;
+        let mut _transaction_count = 0;
 
         for segment_str in segments.iter().skip(1) {
             let segment = parser.parse_segment(segment_str)?;
